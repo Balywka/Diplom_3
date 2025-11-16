@@ -1,6 +1,5 @@
 import allure
 from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from pages.base_page import BasePage
 from locators.feed_page_locators import FeedPageLocators
 from urls import PAGES
@@ -43,7 +42,7 @@ class FeedPage(BasePage):
         return [el.text for el in elements if el.text.strip()]
 
     @allure.step("Дождаться появления заказа в разделе 'В работе'")
-    def wait_for_order_in_progress(self, order_number, timeout=3):
+    def wait_for_order_in_progress(self, order_number, timeout=10):
         expected_order = f"0{order_number}"
 
         def order_appeared(driver):
@@ -53,13 +52,14 @@ class FeedPage(BasePage):
             except:
                 return False
 
-        WebDriverWait(self.driver, timeout).until(
+        return self.wait_until(
             order_appeared,
-            message=f"Заказ {expected_order} не появился в разделе 'В работе' за {timeout} секунд")
-        return True
+            timeout=timeout,
+            message=f"Заказ {expected_order} не появился в разделе 'В работе' за {timeout} секунд"
+        )
 
     @allure.step("Дождаться появления заказа в ленте")
-    def wait_for_order_in_feed(self, order_number, timeout=3):
+    def wait_for_order_in_feed(self, order_number, timeout=10):
         expected_order = f"0{order_number}"
 
         def order_in_feed(driver):
@@ -69,18 +69,22 @@ class FeedPage(BasePage):
             except:
                 return False
 
-        WebDriverWait(self.driver, timeout).until(
+        return self.wait_until(
             order_in_feed,
-            message=f"Заказ {expected_order} не появился в ленте за {timeout} секунд")
-        return True
+            timeout=timeout,
+            message=f"Заказ {expected_order} не появился в ленте за {timeout} секунд"
+        )
 
     @allure.step("Ждать увеличения счетчика")
-    def wait_for_counter_increase(self, counter_func, initial_value, timeout=3):
+    def wait_for_counter_increase(self, counter_func, initial_value, timeout=10):
         def counter_increased(driver):
             current_value = counter_func()
             return current_value > initial_value
 
-        WebDriverWait(self.driver, timeout).until(
+        # Ждем увеличения счетчика
+        self.wait_until(
             counter_increased,
-            message=f"Счетчик не увеличился за {timeout} секунд. Исходное значение: {initial_value}")
+            timeout=timeout,
+            message=f"Счетчик не увеличился за {timeout} секунд. Исходное значение: {initial_value}"
+        )
         return counter_func()

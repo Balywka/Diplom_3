@@ -6,8 +6,25 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 
-
 class BasePage:
+    DRAG_AND_DROP_SCRIPT = """
+    function simulateDragDrop(sourceNode, destinationNode) {
+        function createEvent(type) {
+            const event = new MouseEvent(type, {bubbles: true, cancelable: true});
+            if (type.includes('drag')) {
+                event.dataTransfer = {setData: function () {}, setDragImage: function () {}};
+            }
+            return event;
+        }
+        sourceNode.dispatchEvent(createEvent('dragstart'));
+        destinationNode.dispatchEvent(createEvent('dragover'));
+        destinationNode.dispatchEvent(createEvent('drop'));
+        sourceNode.dispatchEvent(createEvent('dragend'));
+        return true;
+    }
+    return simulateDragDrop(arguments[0], arguments[1]);
+    """
+
     def __init__(self, driver):
         self.driver = driver
 
@@ -70,10 +87,10 @@ class BasePage:
         WebDriverWait(self.driver, 2).until(EC.url_contains(text))
 
     @allure.step("Перетащить элемент через JS")
-    def drag_and_drop_js(self, source_locator, target_locator, js_script):
+    def drag_and_drop_js(self, source_locator, target_locator):
         source = WebDriverWait(self.driver, 2).until(EC.visibility_of_element_located(source_locator))
         target = WebDriverWait(self.driver, 2).until(EC.visibility_of_element_located(target_locator))
-        self.driver.execute_script(js_script, source, target)
+        self.driver.execute_script(self.DRAG_AND_DROP_SCRIPT, source, target)
 
     @allure.step("Ждать исчезновения элемента {locator}")
     def wait_for_element_to_disappear(self, locator):
@@ -102,3 +119,7 @@ class BasePage:
             current_state = driver.execute_script("return document.readyState")
             return current_state == "complete" and current_state == initial_state
         WebDriverWait(self.driver, timeout).until(page_is_stable)
+
+    @allure.step("Ждать выполнения условия")
+    def wait_until(self, condition_func, timeout=10, message="Условие не выполнено за отведенное время"):
+        return WebDriverWait(self.driver, timeout).until(condition_func, message=message)

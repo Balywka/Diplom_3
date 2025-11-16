@@ -24,52 +24,26 @@ def driver(request):
     yield driver
     driver.quit()
 
-
 @pytest.fixture
-def api_client():
-    return StellarBurgersAPI()
-
-
-@pytest.fixture
-def registered_user(api_client):
+def registered_user():
+    api_client = StellarBurgersAPI()
     user_data = TestData.generate_user_data()
     resp = api_client.create_user(user_data)
     token = resp.json().get("accessToken")
     yield {"data": user_data, "token": token, "api": api_client}
     if token:
-        api_client.delete_user(token)
-
-
-@pytest.fixture
-def drag_and_drop_js():
-    return """
-    function simulateDragDrop(sourceNode, destinationNode) {
-        function createEvent(type) {
-            const event = new MouseEvent(type, {bubbles: true, cancelable: true});
-            if (type.includes('drag')) {
-                event.dataTransfer = {setData: function () {}, setDragImage: function () {}};
-            }
-            return event;
-        }
-
-        sourceNode.dispatchEvent(createEvent('dragstart'));
-        destinationNode.dispatchEvent(createEvent('dragover'));
-        destinationNode.dispatchEvent(createEvent('drop'));
-        sourceNode.dispatchEvent(createEvent('dragend'));
-        return true;
-    }
-    return simulateDragDrop(arguments[0], arguments[1]);
-    """
-
+        try:
+            api_client.delete_user(token)
+        except Exception as e:
+            print(f"Ошибка при удалении пользователя: {e}")
 
 @pytest.fixture
 def authorized_user_ready(driver, registered_user):
     main = MainPage(driver)
     login = LoginPage(driver)
     main.open_main_page()
-    # Ждем стабилизации страницы перед кликом
     main.wait_after_action()
     main.click_sign_in_button()
     login.login_user(registered_user["data"]["email"], registered_user["data"]["password"])
     main.wait_for_login_completion()
-    return {"main": main, "user_data": registered_user}
+    yield {"main": main, "user_data": registered_user}

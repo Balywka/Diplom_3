@@ -44,8 +44,8 @@ class MainPage(BasePage):
         self.click_element_js(self.locators.FIRST_BUN)
 
     @allure.step("Перетащить первую булку в конструктор")
-    def drag_first_bun_to_constructor(self, js_script):
-        self.drag_and_drop_js(self.locators.FIRST_BUN, self.locators.DROP_TARGET, js_script)
+    def drag_first_bun_to_constructor(self):
+        self.drag_and_drop_js(self.locators.FIRST_BUN, self.locators.DROP_TARGET)
 
     @allure.step("Получить счетчик первого ингредиента")
     def get_first_ingredient_counter(self):
@@ -56,16 +56,15 @@ class MainPage(BasePage):
 
     @allure.step("Нажать кнопку 'Войти в аккаунт'")
     def click_sign_in_button(self):
-        login_btn_locator = (By.XPATH, "//button[contains(text(), 'Войти в аккаунт')]")
-        self.click_element_js(login_btn_locator)
+        self.click_element_js(self.locators.SIGN_IN_BUTTON)
 
     @allure.step("Перетащить соус в конструктор")
-    def drag_first_sauce_to_constructor(self, js_script):
-        self.drag_and_drop_js(self.locators.FIRST_SAUCE, self.locators.DROP_TARGET, js_script)
+    def drag_first_sauce_to_constructor(self):
+        self.drag_and_drop_js(self.locators.FIRST_SAUCE, self.locators.DROP_TARGET)
 
     @allure.step("Перетащить основной ингредиент в конструктор")
-    def drag_first_main_to_constructor(self, js_script):
-        self.drag_and_drop_js(self.locators.FIRST_MAIN, self.locators.DROP_TARGET, js_script)
+    def drag_first_main_to_constructor(self):
+        self.drag_and_drop_js(self.locators.FIRST_MAIN, self.locators.DROP_TARGET)
 
     @allure.step("Нажать кнопку 'Оформить заказ'")
     def click_place_order_button(self):
@@ -106,11 +105,11 @@ class MainPage(BasePage):
         self.wait_for_element_visible(self.locators.ORDER_MODAL)
 
     @allure.step("Создать заказ через UI")
-    def create_order_ui(self, drag_and_drop_script):
+    def create_order_ui(self):
         self.wait_for_ingredients_loaded()
-        self.drag_first_bun_to_constructor(drag_and_drop_script)
-        self.drag_first_sauce_to_constructor(drag_and_drop_script)
-        self.drag_first_main_to_constructor(drag_and_drop_script)
+        self.drag_first_bun_to_constructor()
+        self.drag_first_sauce_to_constructor()
+        self.drag_first_main_to_constructor()
         self.click_place_order_button()
         self.wait_for_order_modal()
         order_id = self.get_order_id_from_modal()

@@ -49,11 +49,11 @@ class TestMainUI:
         assert modal.is_modal_closed(), "Модальное окно не закрылось после клика на крестик"
 
     @allure.title("Увеличение счетчика ингредиента")
-    def test_ingredient_counter_increases(self, driver, drag_and_drop_js):
+    def test_ingredient_counter_increases(self, driver):
         main = MainPage(driver)
         main.open_main_page()
         main.wait_for_ingredients_loaded()
         initial_counter = main.get_first_ingredient_counter()
-        main.drag_first_bun_to_constructor(drag_and_drop_js)
+        main.drag_first_bun_to_constructor()
         final_counter = main.get_first_ingredient_counter()
         assert final_counter > initial_counter, f"Счетчик не увеличился: было {initial_counter}, стало {final_counter}"
